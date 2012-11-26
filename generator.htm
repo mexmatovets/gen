@@ -1,0 +1,226 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+FD583F3CB33E4226B56558AF1F59C7C3.root_rel=/../../
+<script type="text/javascript" src="../jquery-1.6.min.js"></script>
+//-->
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Generate data for calculation</title>
+	<link rel="stylesheet" type="text/css" href="./scripts/easyui.css">
+	<link rel="stylesheet" type="text/css" href="./scripts/icon.css">
+	<script type="text/javascript" src="./scripts/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript" src="./scripts/jquery.easyui.min.js"></script>
+		
+		
+		
+	<script type="text/javascript" src="./flot/jquery.flot.js"></script>
+	<script type="text/javascript" src="./scripts/$require.js"></script>
+	<script type="text/javascript" src="./scripts/LPC.js"></script>
+	<script type="text/javascript" src="./scripts/jsonrpc.js"></script>
+	<script type="text/javascript" src="./scripts/fmo_marshal.js"></script>
+	<script type="text/javascript" src="./scripts/RPC.js"></script>
+	<script type="text/javascript" src="./numerical/utils_1D.js"></script>
+	
+<style type="text/css">
+body {font-size:14px;}
+label {float:left; padding-right:5px;}
+.field {clear:both; text-align:right; line-height:25px;}
+.main {float:left;}
+</style>
+	
+</head>
+<body>  
+    <div class="demo-info">  
+        <div class="demo-tip icon-tip"></div>  
+     </div>  
+    <div style="margin:10px 0;"></div>  
+    <div id="tt" class="easyui-tabs" data-options="tools:'#tab-tools'"> <!-- style="width:700px;height:250px">  -->
+    </div>  
+    <div id="tab-tools">  
+        <a href="javascript:void(0)" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add'" onclick="add()">Add</a>  
+		<a href="javascript:void(0)" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-remove'" onclick="remove()">Delete</a>  
+		<a href="javascript:void(0)" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-remove'" onclick="generate()">Save all</a>  
+    </div>  
+    <script type="text/javascript">  
+		$require('../scripts/rpc_utils.js');	
+        var index = 0;  
+		myGlobalVariables=function (){
+			this.accept_arrays		=[];
+			this.place_for_array_x	=[];
+			this.place_for_array_y	=[];
+			this.place_for_ignor	=[];
+			this.eliminator			=[];
+			this.press				=[];
+			this.well_name_area		=[];
+			this.well_radius_area	=[];
+			this.erase_index=function(index){
+				this.accept_arrays		[index]=undefined;
+				this.place_for_array_x	[index]=undefined;
+				this.place_for_array_y	[index]=undefined;
+				this.place_for_ignor	[index]=undefined;
+				this.eliminator			[index]=undefined;
+				this.press				[index]=undefined;
+				this.well_name_area		[index]=undefined;
+				this.well_radius_area	[index]=undefined;
+			}
+		}
+		myGlob=new myGlobalVariables();
+        function add(){  
+            index++;  
+            $('#tt').tabs('add',{  
+                title: 'curve_'+index,  
+			content: '<table border="1" width="100%" cellpadding="5"><tr><th><div><span style="padding:60px">Time</span><span style="padding:70px">Value</span></div>'+
+					'<div><textarea id="place_for_array_x'+index+'" name="text" style="height:700px;"></textarea>'+
+					'<textarea id="place_for_array_y'+index+'" name="text" style="height:700px;"></textarea></div>'+
+					'<div><select id="unit_x'+index+'" onchange="getCombo(this)" name="state" style="width:156px;"><option value="hour">hour</option><option value="day">day</option></select>'+
+					'<select id="unit_y'+index+'" onchange="getCombo(this)" name="state" style="width:156px;"><option value="atm">atm</option><option value="m^3/day">m^3/day</option></select></div></th><th valign="top">'+
+					'<div class="main"><div class="field"><label>Well name</label><input type="text" id="well_name_area'+index+'" name="text"></></div>'+
+					'<div class="field"><input type="checkbox" id="check_injector'+index+'" name="injector" value="injector">Injector<br></div>'+
+					'<div class="field"><label>Radius</label><input type="text" id="well_radius_area'+index+'" name="text"></>'+
+					'<div class="field"><label>Eliminate</label><input type="text" id="place_for_ignor'+index+'" name="text"></></div>'+        
+					'<div><input id="eliminate'+index+'" type="button" style="width:150px" value="eliminate" />'+
+					'<input id="accept_arrays'+index+'" type="button" style="width:150px" value="accept_arrays" /></div></th><th></div>'+
+					'<div id="area_for_graphics'+index+'" style="width:400px;overflow:hidden;"></div>'+
+					'</th></tr></table>',
+
+				
+                closable: false  
+            });  
+			alive(index);
+			myGlob.max_ind=index;
+        }  
+        function remove(){  
+            var tab = $('#tt').tabs('getSelected');  
+            if (tab){  
+                var index = $('#tt').tabs('getTabIndex', tab);  
+                $('#tt').tabs('close', index);  
+				myGlob.erase_index(index);
+            }  
+        }  
+
+		function alive (ind) {
+			var index=ind-1;
+			myGlob.accept_arrays[index] 	= document.getElementById("accept_arrays"+ind);
+			myGlob.place_for_array_x[index] = document.getElementById("place_for_array_x"+ind);myGlob.place_for_array_x[index].style.width="150px";
+			myGlob.place_for_array_y[index] = document.getElementById("place_for_array_y"+ind);myGlob.place_for_array_y[index].style.width="150px";
+			myGlob.place_for_ignor[index]   = document.getElementById("place_for_ignor"+ind);  myGlob.place_for_ignor[index].style.width  ="150px";
+			myGlob.eliminator[index] 		= document.getElementById("eliminate"+ind);
+			myGlob.press[index]				= {};
+			myGlob.well_name_area[index]	= document.getElementById("well_name_area"+ind);  myGlob.well_name_area[index].style.width    ="150px";
+			myGlob.well_radius_area[index]  = document.getElementById("well_radius_area"+ind);myGlob.well_radius_area[index].style.width  ="150px";
+			myGlob.accept_arrays[index].addEventListener("click", function(event) {
+				try{
+					myGlob.press[index].t=parse_array(myGlob.place_for_array_x[index].value,find_mult("unit_x"+ind));
+					myGlob.press[index].v=parse_array(myGlob.place_for_array_y[index].value,find_mult("unit_y"+ind));
+					if (myGlob.press[index].t) {
+						if (myGlob.press[index].t.length!==myGlob.press[index].v.length) {myGlob.press[index]={}; throw "Array lengths are not the same."}
+						show_curve(union(myGlob.press[index].t,myGlob.press[index].v),ind);
+					}
+				}catch(e){alert(e);}
+			});
+			myGlob.eliminator[index].addEventListener("click", function(event) {
+				try {
+					if (myGlob.press[index]&&myGlob.press[index].length!==0){
+						var unv=parse_array(myGlob.place_for_ignor[index].value);
+						if (unv&&unv.length!==0){
+							unv=make_unvalids_array(unv);
+							var res=utils_1D.eliminate_bad_data(union(myGlob.press[index].t,myGlob.press[index].v),unv)
+							show_curve(res,ind);
+						}
+					}
+				}
+				catch(e){alert(e)}
+			});
+		}	
+		function parse_array(s,mult){
+			s=s.replace(/,/g,'.');
+			var splitted_string = s.match(/[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?/g);
+			if (splitted_string){
+			var arr=[]; if(!mult) mult=1;
+				for (var i = 0; i < splitted_string.length; i++){			
+					arr[i]=splitted_string[i]-0;
+					arr[i]*=mult;
+				}
+			}
+			return arr;
+		}
+		function show_curve(obj,index){
+			var div = document.getElementById('area_for_graphics'+index);
+			if(div.childElementCount==0){
+				var divChild=document.createElement('div');
+				divChild.setAttribute('id','placeholder'+index);
+				divChild.setAttribute('style','width:400px;height:300px');
+				div.appendChild(divChild);
+			}
+			$.plot($("#placeholder"+index), [{data:obj}]);
+		}
+		function union (x,y){
+			if (x.length!==y.length) throw "Error in union function";
+			var res=[];
+			for (var i = 0; i < x.length; i++){
+				res[i]=[x[i],y[i]];
+			}
+			return res;
+		}
+		function generate(obj){
+			//json_save({well_i:{press:obj,r:0.1}});
+			try{
+				var obj=collect_all();
+				json_save(obj);
+			}catch(e){alert(e)}
+		}
+		function make_unvalids_array(arr){
+			var res=[];
+			if (arr&&(arr.length%2===0)){
+				for (var i = 0, j = 0; j < arr.length; i++,j=j+2)	{
+					res[i]=[arr[j],arr[j+1]];
+				}
+			}else {throw "Unvalids is odd!";}
+			return res;
+		}
+		function collect_all(){
+			var obj={};
+			if ((myGlob.max_ind===undefined)||(myGlob.max_ind===-1)) throw "Create some tabs first";
+			for (var i = 0; i < myGlob.max_ind; i++){
+				if(myGlob.well_name_area[i]){if(myGlob.well_name_area[i].value){
+						if(myGlob.well_radius_area[i]){if(myGlob.well_radius_area[i].value){
+							if(!isEmpty(myGlob.press[i])){
+								obj[myGlob.well_name_area[i].value]={inj: is_injector(i),r:myGlob.well_radius_area[i].value,press:{t:new Float32Array(myGlob.press[i].t),v:new Float32Array(myGlob.press[i].v)}}
+							}else throw "array for curve " +(i+1)+" is empty, please set arrays and click accept";
+						}else throw "radius area for curve " +(i+1)+" is empty";}
+					}else throw "well name area for curve " +(i+1)+" is empty";}
+				
+			}
+			return obj;
+		}
+		function isEmpty( o ) {
+			for ( var p in o ) { 
+				if ( o.hasOwnProperty( p ) ) { return false; }
+			}
+			return true;
+		}
+		function find_mult(s){
+			var mult=1;
+			var div=document.getElementById(s);
+			switch(div.options[div.selectedIndex].value){
+				case "hour"		: break;
+				case "day" 		: mult*=24; break;
+				case "atm" 		: break;
+				case "m^3/day" 	: break;
+			}
+			return mult;
+		}
+		function getCombo(cel){
+			var value=cel.options[cel.selectedIndex].value;
+		}
+		function is_injector(ind){
+			var res=0;
+			var div = document.getElementById("check_injector"+(ind+1));
+			if(div&&div.checked) res=1;
+			return res;
+		}
+	</script>
+</body>  
+</html>
