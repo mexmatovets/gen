@@ -1,4 +1,1 @@
-gen
-===
-
-generator files of specifyc format for solver
+generator of files of specifyc format for solver

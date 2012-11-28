@@ -48,22 +48,12 @@ label {float:left; padding-right:5px;}
         var index = 0;  
 		myGlobalVariables=function (){
 			this.accept_arrays		=[];
-			this.place_for_array_x	=[];
-			this.place_for_array_y	=[];
-			this.place_for_ignor	=[];
 			this.eliminator			=[];
 			this.press				=[];
-			this.well_name_area		=[];
-			this.well_radius_area	=[];
 			this.erase_index=function(index){
 				this.accept_arrays		[index]=undefined;
-				this.place_for_array_x	[index]=undefined;
-				this.place_for_array_y	[index]=undefined;
-				this.place_for_ignor	[index]=undefined;
 				this.eliminator			[index]=undefined;
 				this.press				[index]=undefined;
-				this.well_name_area		[index]=undefined;
-				this.well_radius_area	[index]=undefined;
 			}
 		}
 		myGlob=new myGlobalVariables();
@@ -103,17 +93,17 @@ label {float:left; padding-right:5px;}
 		function alive (ind) {
 			var index=ind-1;
 			myGlob.accept_arrays[index] 	= document.getElementById("accept_arrays"+ind);
-			myGlob.place_for_array_x[index] = document.getElementById("place_for_array_x"+ind);myGlob.place_for_array_x[index].style.width="150px";
-			myGlob.place_for_array_y[index] = document.getElementById("place_for_array_y"+ind);myGlob.place_for_array_y[index].style.width="150px";
-			myGlob.place_for_ignor[index]   = document.getElementById("place_for_ignor"+ind);  myGlob.place_for_ignor[index].style.width  ="150px";
 			myGlob.eliminator[index] 		= document.getElementById("eliminate"+ind);
 			myGlob.press[index]				= {};
-			myGlob.well_name_area[index]	= document.getElementById("well_name_area"+ind);  myGlob.well_name_area[index].style.width    ="150px";
-			myGlob.well_radius_area[index]  = document.getElementById("well_radius_area"+ind);myGlob.well_radius_area[index].style.width  ="150px";
+			document.getElementById("place_for_array_x"+ind).style.width	="150px";
+			document.getElementById("place_for_array_y"+ind).style.width	="150px";
+			document.getElementById("place_for_ignor"+ind).style.width  	="150px";
+			document.getElementById("well_name_area"+ind).style.width    	="150px";
+			document.getElementById("well_radius_area"+ind).style.width  	="150px";
 			myGlob.accept_arrays[index].addEventListener("click", function(event) {
 				try{
-					myGlob.press[index].t=parse_array(myGlob.place_for_array_x[index].value,find_mult("unit_x"+ind));
-					myGlob.press[index].v=parse_array(myGlob.place_for_array_y[index].value,find_mult("unit_y"+ind));
+					myGlob.press[index].t=parse_array(document.getElementById("place_for_array_x"+(index+1)).value,find_mult("unit_x"+ind));
+					myGlob.press[index].v=parse_array(document.getElementById("place_for_array_y"+(index+1)).value,find_mult("unit_y"+ind));
 					if (myGlob.press[index].t) {
 						if (myGlob.press[index].t.length!==myGlob.press[index].v.length) {myGlob.press[index]={}; throw "Array lengths are not the same."}
 						show_curve(union(myGlob.press[index].t,myGlob.press[index].v),ind);
@@ -123,7 +113,7 @@ label {float:left; padding-right:5px;}
 			myGlob.eliminator[index].addEventListener("click", function(event) {
 				try {
 					if (myGlob.press[index]&&myGlob.press[index].length!==0){
-						var unv=parse_array(myGlob.place_for_ignor[index].value);
+						var unv=parse_array(document.getElementById("place_for_ignor"+(index+1)).value);
 						if (unv&&unv.length!==0){
 							unv=make_unvalids_array(unv);
 							var res=utils_1D.eliminate_bad_data(union(myGlob.press[index].t,myGlob.press[index].v),unv)
@@ -184,10 +174,10 @@ label {float:left; padding-right:5px;}
 			var obj={};
 			if ((myGlob.max_ind===undefined)||(myGlob.max_ind===-1)) throw "Create some tabs first";
 			for (var i = 0; i < myGlob.max_ind; i++){
-				if(myGlob.well_name_area[i]){if(myGlob.well_name_area[i].value){
-						if(myGlob.well_radius_area[i]){if(myGlob.well_radius_area[i].value){
+				if(document.getElementById("well_name_area"+(i+1))){if(document.getElementById("well_name_area"+(i+1)).value){
+						if(document.getElementById("well_radius_area"+(i+1))){if(document.getElementById("well_radius_area"+(i+1)).value){
 							if(!isEmpty(myGlob.press[i])){
-								obj[myGlob.well_name_area[i].value]={inj: is_injector(i),r:myGlob.well_radius_area[i].value,press:{t:new Float32Array(myGlob.press[i].t),v:new Float32Array(myGlob.press[i].v)}}
+								obj[document.getElementById("well_name_area"+(i+1)).value]={inj: is_injector(i),r:document.getElementById("well_radius_area"+(i+1)).value,press:{t:new Float32Array(myGlob.press[i].t),v:new Float32Array(myGlob.press[i].v)}}
 							}else throw "array for curve " +(i+1)+" is empty, please set arrays and click accept";
 						}else throw "radius area for curve " +(i+1)+" is empty";}
 					}else throw "well name area for curve " +(i+1)+" is empty";}
